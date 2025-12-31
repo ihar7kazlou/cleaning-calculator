@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор клинингового сервиса</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div id="app" class="mx-auto max-w-4xl px-6 py-8">
+        <h2 class="text-3xl font-bold mb-2">Калькулятор клинингового сервиса</h2>
+        <p class="text-gray-600 mb-8">Рассчитайте стоимость уборки для вашего помещения</p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Левая колонка - параметры -->
+            <div class="space-y-6">
+                <div class="bg-white border rounded-lg p-6 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4">Параметры уборки</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Тип услуги</label>
+                            <select id="serviceType" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="regular">Регулярная уборка</option>
+                                <option value="deep">Генеральная уборка</option>
+                                <option value="window">Мойка окон</option>
+                                <option value="carpet">Химчистка ковров</option>
+                                <option value="move_in_out">Уборка при переезде</option>
+                                <option value="post_construction">Уборка после ремонта</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">
+                                Площадь помещения (м²)
+                            </label>
+                            <input
+                                id="area"
+                                type="number"
+                                min="10"
+                                max="500"
+                                value="50"
+                                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">
+                                Количество комнат
+                            </label>
+                            <input
+                                id="rooms"
+                                type="number"
+                                min="1"
+                                max="20"
+                                value="2"
+                                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">
+                                Количество санузлов
+                            </label>
+                            <input
+                                id="bathrooms"
+                                type="number"
+                                min="0"
+                                max="10"
+                                value="1"
+                                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Частота уборки</label>
+                            <select id="frequency" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="one_time">Разовая</option>
+                                <option value="weekly">Еженедельно</option>
+                                <option value="biweekly">Раз в 2 недели</option>
+                                <option value="monthly">Ежемесячно</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border rounded-lg p-6 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4">Дополнительные услуги</h3>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input
+                                id="addWindowCleaning"
+                                type="checkbox"
+                                class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span class="text-sm">Мойка окон</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input
+                                id="addCarpetCleaning"
+                                type="checkbox"
+                                class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span class="text-sm">Химчистка ковров</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка - расчет -->
+            <div>
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6 shadow-lg sticky top-8">
+                    <h3 class="text-xl font-semibold mb-4">Расчет стоимости</h3>
+                    
+                    <div id="calculation" class="space-y-3 mb-6">
+                        <!-- Расчет будет обновляться здесь -->
+                    </div>
+
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md">
+                        Заказать уборку
+                    </button>
+
+                    <div class="mt-4 text-xs text-gray-500 space-y-1">
+                        <p>• Цены указаны ориентировочно</p>
+                        <p>• Финальная стоимость может отличаться</p>
+                        <p>• Скидка применяется при регулярном обслуживании</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const services = {
+            regular: { name: 'Регулярная уборка', basePrice: 5, minPrice: 2000 },
+            deep: { name: 'Генеральная уборка', basePrice: 8, minPrice: 3500 },
+            window: { name: 'Мойка окон', basePrice: 3, minPrice: 1500 },
+            carpet: { name: 'Химчистка ковров', basePrice: 12, minPrice: 2500 },
+            move_in_out: { name: 'Уборка при переезде', basePrice: 10, minPrice: 5000 },
+            post_construction: { name: 'Уборка после ремонта', basePrice: 15, minPrice: 8000 },
+        };
+
+        const frequencyMultipliers = {
+            one_time: 1,
+            weekly: 0.85,
+            biweekly: 0.9,
+            monthly: 0.95,
+        };
+
+        function calculate() {
+            const selectedService = document.getElementById('serviceType').value;
+            const area = parseFloat(document.getElementById('area').value) || 50;
+            const frequency = document.getElementById('frequency').value;
+            const addWindowCleaning = document.getElementById('addWindowCleaning').checked;
+            const addCarpetCleaning = document.getElementById('addCarpetCleaning').checked;
+
+            const currentService = services[selectedService];
+            const baseCost = Math.max(area * currentService.basePrice, currentService.minPrice);
+
+            const windowCost = addWindowCleaning 
+                ? Math.max(area * services.window.basePrice, services.window.minPrice)
+                : 0;
+            
+            const carpetCost = addCarpetCleaning
+                ? Math.max(area * services.carpet.basePrice, services.carpet.minPrice)
+                : 0;
+
+            const frequencyMultiplier = frequencyMultipliers[frequency];
+            const totalCost = Math.round((baseCost + windowCost + carpetCost) * frequencyMultiplier);
+
+            const calculationDiv = document.getElementById('calculation');
+            calculationDiv.innerHTML = `
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Базовая услуга:</span>
+                    <span class="font-medium">${baseCost.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                ${addWindowCleaning ? `
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Мойка окон:</span>
+                    <span class="font-medium">+${windowCost.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                ` : ''}
+                ${addCarpetCleaning ? `
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Химчистка ковров:</span>
+                    <span class="font-medium">+${carpetCost.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                ` : ''}
+                ${frequency !== 'one_time' ? `
+                <div class="flex justify-between text-sm text-green-600">
+                    <span>Скидка за регулярность:</span>
+                    <span>-${Math.round((1 - frequencyMultiplier) * 100)}%</span>
+                </div>
+                ` : ''}
+                <div class="border-t pt-3 mt-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-semibold">Итого:</span>
+                        <span class="text-2xl font-bold text-blue-600">
+                            ${totalCost.toLocaleString('ru-RU')} ₽
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Привязываем обработчики событий
+        document.getElementById('serviceType').addEventListener('change', calculate);
+        document.getElementById('area').addEventListener('input', calculate);
+        document.getElementById('rooms').addEventListener('input', calculate);
+        document.getElementById('bathrooms').addEventListener('input', calculate);
+        document.getElementById('frequency').addEventListener('change', calculate);
+        document.getElementById('addWindowCleaning').addEventListener('change', calculate);
+        document.getElementById('addCarpetCleaning').addEventListener('change', calculate);
+
+        // Первоначальный расчет
+        calculate();
+    </script>
+</body>
+</html>
+
+

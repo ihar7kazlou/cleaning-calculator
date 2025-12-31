@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("TRAINEE") // ADMIN or TRAINEE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  runs      Run[]
+}
+
+model Scenario {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  rootNodeId  String?
+  nodes       DialogNode[]
+  rubricItems RubricItem[]
+  runs        Run[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model DialogNode {
+  id          String    @id @default(cuid())
+  scenario    Scenario  @relation(fields: [scenarioId], references: [id])
+  scenarioId  String
+  prompt      String
+  hint        String?
+  // Edges as simple JSON to keep schema compact
+  // [{ label: "If trainee says X", toNodeId: "..." }]
+  edgesJson   String
+}
+
+model RubricItem {
+  id         String   @id @default(cuid())
+  scenario   Scenario @relation(fields: [scenarioId], references: [id])
+  scenarioId String
+  label      String
+  weight     Int      @default(1)
+  // Optional rule references or keywords
+  ruleJson   String?
+}
+
+model Run {
+  id          String      @id @default(cuid())
+  trainee     User        @relation(fields: [traineeId], references: [id])
+  traineeId   String
+  scenario    Scenario    @relation(fields: [scenarioId], references: [id])
+  scenarioId  String
+  mode        String      // CHAT or VOICE
+  status      String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  transcript  String?
+  metricsJson String?
+  score       Int?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// Модели для калькулятора клининга
+model CleaningCalculation {
+  id                String   @id @default(cuid())
+  serviceType       String   // regular, deep, window, etc.
+  area              Float
+  rooms             Int
+  bathrooms         Int
+  frequency         String   // one_time, weekly, biweekly, monthly
+  addWindowCleaning Boolean  @default(false)
+  addCarpetCleaning Boolean  @default(false)
+  baseCost          Float
+  windowCost        Float    @default(0)
+  carpetCost        Float    @default(0)
+  discount          Float    @default(0)
+  totalCost         Float
+  // Опциональная связь с пользователем (если будет авторизация)
+  userId            String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model CleaningCache {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON данные
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+
+
+
